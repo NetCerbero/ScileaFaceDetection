@@ -52,6 +52,7 @@
                 android:layout_height="wrap_content"
                 android:text="El nombre mas largo del estudiante existente"
                 android:textColor="@color/white"
+                android:layout_gravity="center"
                 android:gravity="center"
                 android:textStyle="bold"
                 android:textSize="22dp"/>
