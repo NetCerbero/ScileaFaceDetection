@@ -1,14 +1,19 @@
 package com.universidad.bluenet.opencvagain;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     JavaCameraView javaCameraView;
     Mat mRgba;
     int n;
+    Dialog myDialog;
     CascadeClassifier cascadeClassifier;
     BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -75,7 +81,25 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
         n = 0;
+        myDialog = new Dialog(this);
     }
+
+    public  void showPopup(View v){
+        TextView txtClose;
+        Button btnAsistencia;
+        myDialog.setContentView(R.layout.card_auth);
+        txtClose = (TextView)myDialog.findViewById(R.id.txtClose);
+        btnAsistencia = (Button)myDialog.findViewById(R.id.btnAsistencia);
+        txtClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+            }
+        });
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+    }
+
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -89,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onResume();
         if(OpenCVLoader.initDebug()){
             Log.i(TAG,"Open successfully");
+
             baseLoaderCallback.onManagerConnected(baseLoaderCallback.SUCCESS);
         }else{
             Log.i(TAG,"not opened");
@@ -125,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
         mRgba = inputFrame.rgba();
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             rotate(mRgba,270);
@@ -184,12 +210,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
-    public static void rotate(Mat image, double angle) {
+    public void rotate(Mat image, double angle) {
         //Calculate size of new matrix
         double radians = Math.toRadians(angle);
         double sin = Math.abs(Math.sin(radians));
         double cos = Math.abs(Math.cos(radians));
-
+        int w = getWindowManager().getDefaultDisplay().getWidth();
+        int h = getWindowManager().getDefaultDisplay().getHeight();
         int newWidth = (int) (image.width() * cos + image.height() * sin);
         int newHeight = (int) (image.width() * sin + image.height() * cos);
 
@@ -197,16 +224,20 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Point center = new Point(newWidth / 2, newHeight / 2);
         Mat rotMatrix = Imgproc.getRotationMatrix2D(center, angle, 1.0); //1.0 means 100 % scale
 
-        Size size = new Size(newWidth, newHeight);
+        //Size size = new Size(newWidth, newHeight);
         Imgproc.warpAffine(image, image, rotMatrix, image.size());
     }
 
     public class Coneccion extends AsyncTask<byte[],Void,Void>{
-        String IP = "192.168.1.219";
+
+
+        String IP = "192.168.43.15";
         int PORT = 10369;
         String TAG = "ACTIVITYSOCKET";
         private long startTime = 0l;
         private Socket connectionSocket;
+        public Coneccion() {
+        }
         @Override
         protected Void doInBackground(byte[]... bytes) {
             try{
