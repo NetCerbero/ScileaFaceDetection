@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "919331072246",
+    "firebase_url": "https://swproject-a6350.firebaseio.com",
+    "project_id": "swproject-a6350",
+    "storage_bucket": "swproject-a6350.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919331072246:android:39af40f1463db4fb",
+        "android_client_info": {
+          "package_name": "com.universidad.bluenet.opencvagain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919331072246-smd9u5711pdhettcsfj6267alvtjn1gq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiDaYKhZXwSukEBsG-BUpYkU69A2ZIiQ8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

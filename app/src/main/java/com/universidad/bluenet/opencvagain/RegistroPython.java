@@ -4,35 +4,26 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -40,20 +31,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.text.Format;
-import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2,MyTaskInformer{
-    public static String TAG = "MainActivity";
+public class RegistroPython extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2,MyTaskInformer{
+    String key;
+    public static String TAG = "Python";
     JavaCameraView javaCameraView;
+    int tActual;
+    int tRetardo;
     Mat mRgba;
     boolean sw;
-    String key;
     Dialog myDialog;
     CascadeClassifier cascadeClassifier;
     BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
@@ -70,85 +60,16 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             }
         }
     };
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        javaCameraView = findViewById(R.id.java_camera_view);
+        setContentView(R.layout.activity_registro_python);
+        sw = false;
+        tRetardo = 0;
+        javaCameraView = findViewById(R.id.registroPython);
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
-        //myDialog = new Dialog(this);
-        sw = false;
-        Bundle dato = getIntent().getExtras();
-        //key="-LT7urRIoXBG1j0gZCfn"+"=";
-        if(dato != null){
-            key = dato.getString("key");
-        }else {
-            finish();
-        }
     }
-
-    public void verificar(View v){
-        //Button btn = (Button)findViewById(R.id.btnVerificar);
-        if(!sw){
-            sw = true;
-        }else{
-            sw = false;
-        }
-        //btn.setEnabled(false);
-    }
-    public  void showPopup(String nombre, final String registro, boolean auth){
-        TextView txtClose,nombreV,registroV;
-        Button btnAsistencia;
-        myDialog.setContentView(R.layout.card_auth);
-        nombreV = (TextView)myDialog.findViewById(R.id.nombre_estudiante);
-        nombreV.setText(nombre);
-        registroV = (TextView)myDialog.findViewById(R.id.registro);
-        registroV.setText(registro);
-        txtClose = (TextView)myDialog.findViewById(R.id.txtClose);
-        btnAsistencia = (Button)myDialog.findViewById(R.id.btnAsistencia);
-        txtClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myDialog.dismiss();
-                //findViewById(R.id.btnVerificar).setEnabled(true);
-            }
-        });
-        btnAsistencia.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //registrar el dato en la bd
-                Log.i("Asistencia", registro);
-            }
-        });
-        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        myDialog.show();
-    }
-
-    @Override
-    public void onTaskDone(String output) {
-        if(output != null) {
-            //traer datos de la bd
-
-            //recuperar de la base de datos
-            //showPopup("Luis Yerko Laura Tola","Reg: "+ output,true);
-            //Log.i(TAG, output);
-        }else{
-            Log.i(TAG, "NADA de Datos");
-        }
-    }
-
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
-    public native void faceDetecction(long addrRgba);
 
     @Override
     protected void onResume() {
@@ -162,7 +83,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION,this,baseLoaderCallback);
         }
     }
-
+    @Override
+    public void onTaskDone(String output) {
+        //Log.i(TAG, output);
+    }
 
     @Override
     protected void onPause() {
@@ -192,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-
         mRgba = inputFrame.rgba();
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             rotate(mRgba,270);
@@ -208,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }else{
             Log.i(TAG,"No se cargo cascade");
         }
-
         // If there are any faces found, draw a rectangle around it
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i <facesArray.length; i++) {
@@ -217,23 +139,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             Utils.matToBitmap(areaFace, bitmap);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
-            byte[] array = new byte["GuardarFoto+".length()+key.length() + byteArrayOutputStream.size()];
-            System.arraycopy("GuardarFoto+".getBytes(),0,array,0,"GuardarFoto+".length());
-            System.arraycopy((key).getBytes(),0,array,"GuardarFoto+".length(),key.length());
-            System.arraycopy(byteArrayOutputStream.toByteArray(),0,array,"GuardarFoto+".length()+key.length(),byteArrayOutputStream.size());
-
-            //key.getBytes(), byteArrayOutputStream.toByteArray()
-            /*byte[] one = getBytesForOne();
-            byte[] two = getBytesForTwo();
-            byte[] combined = new byte[one.length + two.length];
-            System.arraycopy(one,0,combined,0         ,one.length);
-            System.arraycopy(two,0,combined,one.length,two.length);*/
-
+            String analizar = "AnalizarFoto+";
+            byte[] array = new byte[analizar.length() + byteArrayOutputStream.size()];
+            System.arraycopy(analizar.getBytes(),0,array,0,analizar.length());
+            System.arraycopy(byteArrayOutputStream.toByteArray(),0,array,analizar.length(),byteArrayOutputStream.size());
+            //byte[] array = byteArrayOutputStream.toByteArray();
             Log.i(TAG,"length face " + array.length);
             Log.i(TAG,"Se encontro rostros");
             //if(sw){
-            Coneccion coneccion = new Coneccion(this);
-            coneccion.execute(array);
+                //sw = false;
+                Coneccion coneccion = new Coneccion(this);
+                coneccion.execute(array);
             //}
             Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
         }
@@ -283,9 +199,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Imgproc.warpAffine(image, image, rotMatrix, image.size());
     }
 
-
-
-    public class Coneccion extends AsyncTask<byte[],Void,Void>{
+    public class Coneccion extends AsyncTask<byte[],Void,Void> {
 
 
         String IP = "192.168.43.15";
